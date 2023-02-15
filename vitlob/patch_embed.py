@@ -15,7 +15,6 @@ class EmbeddingStem(nn.Module):
         self.pos_embed = nn.Parameter(
             torch.zeros(1, num_patches, embedding_dim)
         )
-        self.pos_drop = nn.Dropout(p=position_embedding_dropout)
 
         patch_dim = 32,#32,#16
         leaky_alpha = 0.01
@@ -43,4 +42,4 @@ class EmbeddingStem(nn.Module):
 #         x = self.linear_projection(x)
         cls_token = self.cls_token.expand(x.shape[0], -1, -1)
         x = torch.cat((cls_token, x), dim=1)
-        return self.pos_drop(x + self.pos_embed)
+        return x + self.pos_embed
