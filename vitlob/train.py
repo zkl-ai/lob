@@ -74,12 +74,18 @@ class Dataset(data.Dataset):
 
 
 def data_preparation():
-    root_train = '/tf/data/BenchmarkDatasets/NoAuction/1.NoAuction_Zscore/NoAuction_Zscore_Training'
-    root_test = '/tf/data/BenchmarkDatasets/NoAuction/1.NoAuction_Zscore/NoAuction_Zscore_Testing'
-    train_data_path = root_train + '/Train_Dst_NoAuction_ZScore_CF_7.txt'
-    test_data_path1 = root_test + '/Test_Dst_NoAuction_ZScore_CF_7.txt'
-    test_data_path2 = root_test + '/Test_Dst_NoAuction_ZScore_CF_8.txt'
-    test_data_path3 = root_test + '/Test_Dst_NoAuction_ZScore_CF_9.txt'
+#     root_train = '/tf/data/BenchmarkDatasets/NoAuction/1.NoAuction_Zscore/NoAuction_Zscore_Training'
+#     root_test = '/tf/data/BenchmarkDatasets/NoAuction/1.NoAuction_Zscore/NoAuction_Zscore_Testing'
+#     train_data_path = root_train + '/Train_Dst_NoAuction_ZScore_CF_7.txt'
+#     test_data_path1 = root_test + '/Test_Dst_NoAuction_ZScore_CF_7.txt'
+#     test_data_path2 = root_test + '/Test_Dst_NoAuction_ZScore_CF_8.txt'
+#     test_data_path3 = root_test + '/Test_Dst_NoAuction_ZScore_CF_9.txt'
+    root_train = '/tf/data/BenchmarkDatasets/NoAuction/3.NoAuction_DecPre/NoAuction_DecPre_Training'
+    root_test = '/tf/data/BenchmarkDatasets/NoAuction/3.NoAuction_DecPre/NoAuction_DecPre_Testing'
+    train_data_path = root_train + '/Train_Dst_NoAuction_DecPre_CF_7.txt'
+    test_data_path1 = root_test + '/Test_Dst_NoAuction_DecPre_CF_7.txt'
+    test_data_path2 = root_test + '/Test_Dst_NoAuction_DecPre_CF_8.txt'
+    test_data_path3 = root_test + '/Test_Dst_NoAuction_DecPre_CF_9.txt'
     dec_data = np.loadtxt(train_data_path)
     dec_test1 = np.loadtxt(test_data_path1)
     dec_test2 = np.loadtxt(test_data_path2)
@@ -219,17 +225,13 @@ if __name__ == '__main__':
     print(device)
     train_loader, val_loader, test_loader = data_preparation()
     model = ViT().to(device)
-#     for name, param in model.named_parameters():
-#         if 'embedding_layer.projection' in name:
-#             param.requires_grad = False
-#             print(name, param.requires_grad)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), 
                                  lr=0.001,#0.0005, 
 #                                  eps=1, 
                                  weight_decay=1e-4)#, amsgrad=True)
     print(optimizer)
-    epochs = 200
+    epochs = 150
     train_losses, val_losses = batch_gd(model, criterion, optimizer, train_loader, val_loader, epochs=epochs)
     compute_acc(test_loader)
     compute_metric(test_loader)

@@ -51,38 +51,16 @@ class Attention(nn.Module):
 
 
 class FeedForward(nn.Module):
-    """
-    Implementation of MLP for transformer
-    """
 
-    def __init__(self, dim, hidden_dim, dropout_rate=0.0, revised=False):
+    def __init__(self, dim, hidden_dim, dropout_rate=0.0):
         super(FeedForward, self).__init__()
-        if not revised:
-            """
-            Original: https://arxiv.org/pdf/2010.11929.pdf
-            """
-            self.net = nn.Sequential(
-                nn.Linear(dim, hidden_dim),
-                nn.GELU(),
-                nn.Dropout(p=dropout_rate),
-                nn.Linear(hidden_dim, dim),
-            )
-        else:
-            """
-            Scaled ReLU: https://arxiv.org/pdf/2109.03810.pdf
-            """
-            self.net = nn.Sequential(
-                nn.Conv1d(dim, hidden_dim, kernel_size=1, stride=1),
-                nn.BatchNorm1d(hidden_dim),
-                nn.GELU(),
-                nn.Dropout(p=dropout_rate),
-                nn.Conv1d(hidden_dim, dim, kernel_size=1, stride=1),
-                nn.BatchNorm1d(dim),
-                nn.GELU(),
-            )
-
-        self.revised = revised
-#         self._init_weights()
+        self.net = nn.Sequential(
+            nn.Linear(dim, hidden_dim),
+            nn.GELU(),
+            nn.Dropout(p=dropout_rate),
+            nn.Linear(hidden_dim, dim),
+        )
+        self._init_weights()
 
     def _init_weights(self):
         for name, module in self.net.named_children():
@@ -90,13 +68,7 @@ class FeedForward(nn.Module):
                 nn.init.normal_(module.bias, std=1e-6)
 
     def forward(self, x):
-        if self.revised:
-            x = x.permute(0, 2, 1)
-            x = self.net(x)
-            x = x.permute(0, 2, 1)
-        else:
-            x = self.net(x)
-
+        x = self.net(x)
         return x
 
 
@@ -105,28 +77,19 @@ class OutputLayer(nn.Module):
         self,
         embedding_dim,
         num_classes=1000,
-        representation_size=None,
-        cls_head=False,
     ):
         super(OutputLayer, self).__init__()
 
         self.num_classes = num_classes
         modules = []
-        if representation_size:
-            modules.append(nn.Linear(embedding_dim, representation_size))
-            modules.append(nn.Tanh())
-            modules.append(nn.Linear(representation_size, num_classes))
-        else:
-            modules.append(nn.Linear(embedding_dim, num_classes))
+        modules.append(nn.Linear(embedding_dim, num_classes))
 
         self.net = nn.Sequential(*modules)
 
-        if cls_head:
-            self.to_cls_token = nn.Identity()
+        self.to_cls_token = nn.Identity()
 
-        self.cls_head = cls_head
         self.num_classes = num_classes
-#         self._init_weights()
+        self._init_weights()
 
     def _init_weights(self):
         for name, module in self.net.named_children():
@@ -136,12 +99,5 @@ class OutputLayer(nn.Module):
                     nn.init.zeros_(module.bias)
 
     def forward(self, x):
-        if self.cls_head:
-            x = self.to_cls_token(x[:, 0])
-        else:
-            """
-            Scaling Vision Transformer: https://arxiv.org/abs/2106.04560
-            """
-            x = torch.mean(x, dim=1)
-
+        x = self.to_cls_token(x[:, 0])
         return self.net(x)

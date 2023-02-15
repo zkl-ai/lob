@@ -58,7 +58,10 @@ class Dataset(data.Dataset):
         y = y[:,self.k]
         self.length = len(x)
 
-        self.x = torch.from_numpy(x)
+#         self.x = torch.from_numpy(x)
+#         self.y = torch.from_numpy(y)
+        x = torch.from_numpy(x)
+        self.x = torch.unsqueeze(x, 1)
         self.y = torch.from_numpy(y)
 
     def __len__(self):
@@ -233,7 +236,7 @@ if __name__ == '__main__':
                                  lr=0.0001,#lr=0.0005, 
                                  weight_decay=1e-4)#, amsgrad=True)
     print(optimizer)
-    epochs = 500
+    epochs = 50
     train_losses, val_losses = batch_gd(model, criterion, optimizer, train_loader, val_loader, epochs=epochs)
     compute_acc(test_loader)
     compute_metric(test_loader)
