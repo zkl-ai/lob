@@ -7,7 +7,7 @@ class EmbeddingStem(nn.Module):
     def __init__(self, channels=1, embedding_dim=128):
         super(EmbeddingStem, self).__init__()
 
-        num_patches = 100x
+        num_patches = 100
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embedding_dim))
         num_patches += 1
 
