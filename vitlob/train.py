@@ -14,6 +14,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from vit import VisionTransformer as ViT
+from ocet import OCET
 
 def prepare_x(data):
     df1 = data[:40, :].T
@@ -224,12 +225,35 @@ if __name__ == '__main__':
     device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
     print(device)
     train_loader, val_loader, test_loader = data_preparation()
-    model = ViT().to(device)
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), 
-                                 lr=0.001,#0.0005, 
-#                                  eps=1, 
-                                 weight_decay=1e-4)#, amsgrad=True)
+#     model = ViT().to(device)
+#     model = OCET(
+#             num_classes=3,
+#             dim=100,
+#             depth=2,
+#             heads=4,
+#             dim_head=25,
+#             mlp_dim=200,
+#         )
+    model = ViT(
+        in_channels=1,
+        embedding_dim=100,
+        num_layers=2,
+        num_heads=4,
+        qkv_bias=False,
+        mlp_ratio=2.0,
+        dropout_rate=0.0,
+        num_classes= 3,
+    )
+    model = model.to(device)
+      
+    print(model)
+    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay= 0.0005)
+    criterion = nn.CrossEntropyLoss(reduction='mean')
+#     criterion = nn.CrossEntropyLoss()
+#     optimizer = torch.optim.Adam(model.parameters(), 
+#                                  lr=0.001,#0.0005, 
+# #                                  eps=1, 
+#                                  weight_decay=1e-4)#, amsgrad=True)
     print(optimizer)
     epochs = 150
     train_losses, val_losses = batch_gd(model, criterion, optimizer, train_loader, val_loader, epochs=epochs)

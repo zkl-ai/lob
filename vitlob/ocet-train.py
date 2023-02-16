@@ -89,7 +89,6 @@ if __name__ == "__main__":
     '''
     k = 0
     dep = 1
-    
     dataset_train = LOBDataset(k, T=100, split='train')
     dataloader_train = DataLoader(dataset=dataset_train, batch_size=256, shuffle=True)
     dataset_test = LOBDataset(k, T=100, split='test')
@@ -137,20 +136,40 @@ if __name__ == "__main__":
 #         num_classes= 3,
 #     )#best Accuracy: 80.0 k=100
     
+#     model = ViT(
+#         in_channels=1,
+#         embedding_dim=32,
+#         num_layers=2,
+#         num_heads=4,
+#         qkv_bias=False,
+#         mlp_ratio=4.0,
+#         dropout_rate=0.0,
+#         num_classes= 3,
+#     ) #83.53
+#     model = ViT(
+#         in_channels=1,
+#         embedding_dim=128,
+#         num_layers=2,
+#         num_heads=4,
+#         qkv_bias=False,
+#         mlp_ratio=2.0,
+#         dropout_rate=0.0,
+#         num_classes= 3,
+#     )
     model = ViT(
         in_channels=1,
-        embedding_dim=32,
+        embedding_dim=100,
         num_layers=2,
         num_heads=4,
         qkv_bias=False,
-        mlp_ratio=4.0,
+        mlp_ratio=2.0,
         dropout_rate=0.0,
         num_classes= 3,
     )
     
     model = model.cuda()
   
-    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay= 0.0005)
+    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay= 0.0001)
     loss_fn = nn.CrossEntropyLoss(reduction='mean')
 
     logging.info('  Model = %s', str(model))

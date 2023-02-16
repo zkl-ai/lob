@@ -60,12 +60,6 @@ class FeedForward(nn.Module):
             nn.Dropout(p=dropout_rate),
             nn.Linear(hidden_dim, dim),
         )
-        self._init_weights()
-
-    def _init_weights(self):
-        for name, module in self.net.named_children():
-            if isinstance(module, nn.Linear):
-                nn.init.normal_(module.bias, std=1e-6)
 
     def forward(self, x):
         x = self.net(x)
@@ -81,23 +75,11 @@ class OutputLayer(nn.Module):
         super(OutputLayer, self).__init__()
 
         self.num_classes = num_classes
-        modules = []
-        modules.append(nn.Linear(embedding_dim, num_classes))
 
-        self.net = nn.Sequential(*modules)
-
-        self.to_cls_token = nn.Identity()
+        self.net = nn.Linear(embedding_dim, num_classes)
 
         self.num_classes = num_classes
-        self._init_weights()
-
-    def _init_weights(self):
-        for name, module in self.net.named_children():
-            if isinstance(module, nn.Linear):
-                if module.weight.shape[0] == self.num_classes:
-                    nn.init.zeros_(module.weight)
-                    nn.init.zeros_(module.bias)
 
     def forward(self, x):
-        x = self.to_cls_token(x[:, 0])
+        x = x[:, 0]
         return self.net(x)
