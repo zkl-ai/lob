@@ -13,7 +13,8 @@ from torchinfo import summary
 import torch.nn as nn
 import torch.optim as optim
 
-from model import ViT
+from vit import VisionTransformer as ViT
+from ocet import OCET
 
 def prepare_x(data):
     df1 = data[:40, :].T
@@ -58,7 +59,10 @@ class Dataset(data.Dataset):
         y = y[:,self.k]
         self.length = len(x)
 
-        self.x = torch.from_numpy(x)
+#         self.x = torch.from_numpy(x)
+#         self.y = torch.from_numpy(y)
+        x = torch.from_numpy(x)
+        self.x = torch.unsqueeze(x, 1)
         self.y = torch.from_numpy(y)
 
     def __len__(self):
@@ -71,12 +75,18 @@ class Dataset(data.Dataset):
 
 
 def data_preparation():
-    root_train = '../data/BenchmarkDatasets/NoAuction/1.NoAuction_Zscore/NoAuction_Zscore_Training'
-    root_test = '../data/BenchmarkDatasets/NoAuction/1.NoAuction_Zscore/NoAuction_Zscore_Testing'
-    train_data_path = root_train + '/Train_Dst_NoAuction_ZScore_CF_7.txt'
-    test_data_path1 = root_test + '/Test_Dst_NoAuction_ZScore_CF_7.txt'
-    test_data_path2 = root_test + '/Test_Dst_NoAuction_ZScore_CF_8.txt'
-    test_data_path3 = root_test + '/Test_Dst_NoAuction_ZScore_CF_9.txt'
+#     root_train = '/tf/data/BenchmarkDatasets/NoAuction/1.NoAuction_Zscore/NoAuction_Zscore_Training'
+#     root_test = '/tf/data/BenchmarkDatasets/NoAuction/1.NoAuction_Zscore/NoAuction_Zscore_Testing'
+#     train_data_path = root_train + '/Train_Dst_NoAuction_ZScore_CF_7.txt'
+#     test_data_path1 = root_test + '/Test_Dst_NoAuction_ZScore_CF_7.txt'
+#     test_data_path2 = root_test + '/Test_Dst_NoAuction_ZScore_CF_8.txt'
+#     test_data_path3 = root_test + '/Test_Dst_NoAuction_ZScore_CF_9.txt'
+    root_train = '/tf/data/BenchmarkDatasets/NoAuction/3.NoAuction_DecPre/NoAuction_DecPre_Training'
+    root_test = '/tf/data/BenchmarkDatasets/NoAuction/3.NoAuction_DecPre/NoAuction_DecPre_Testing'
+    train_data_path = root_train + '/Train_Dst_NoAuction_DecPre_CF_7.txt'
+    test_data_path1 = root_test + '/Test_Dst_NoAuction_DecPre_CF_7.txt'
+    test_data_path2 = root_test + '/Test_Dst_NoAuction_DecPre_CF_8.txt'
+    test_data_path3 = root_test + '/Test_Dst_NoAuction_DecPre_CF_9.txt'
     dec_data = np.loadtxt(train_data_path)
     dec_test1 = np.loadtxt(test_data_path1)
     dec_test2 = np.loadtxt(test_data_path2)
@@ -87,7 +97,7 @@ def data_preparation():
     dec_val = dec_data[:, int(np.floor(dec_data.shape[1] * 0.8)):]
     dec_test = np.hstack((dec_test1, dec_test2, dec_test3))
 
-    batch_size = 64
+    batch_size = 32
 
     dataset_train = Dataset(data=dec_train, k=4, num_classes=3, T=100)
     dataset_val = Dataset(data=dec_val, k=4, num_classes=3, T=100)
@@ -98,6 +108,11 @@ def data_preparation():
     test_loader = torch.utils.data.DataLoader(dataset=dataset_test, batch_size=batch_size, shuffle=False)
 
     print(dataset_train.x.shape, dataset_train.y.shape)
+    tmp_loader = torch.utils.data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=True)
+
+    for x, y in train_loader:
+        print(x.shape, y.shape)
+        break
     return (train_loader, val_loader, test_loader)
 
 # A function to encapsulate the training loop
@@ -130,7 +145,7 @@ def batch_gd(model, criterion, optimizer, train_loader, test_loader, epochs):
             train_loss.append(loss.item())
         # Get train loss and test loss
         train_loss = np.mean(train_loss) # a little misleading
-    
+        
         model.eval()
         test_loss = []
         for inputs, targets in test_loader:
@@ -149,8 +164,11 @@ def batch_gd(model, criterion, optimizer, train_loader, test_loader, epochs):
             best_test_loss = test_loss
             best_test_epoch = it
             print('model saved')
-
+        
         dt = datetime.now() - t0
+        torch.save(model, './cur_iter_model_pytorch')
+        np.savetxt('train_losses_vit0.01_10.txt', train_losses)
+        np.savetxt('test_losses_vit0.01_k10.txt', test_losses)
         print(f'Epoch {it+1}/{epochs}, Train Loss: {train_loss:.4f}, \
           Validation Loss: {test_loss:.4f}, Duration: {dt}, Best Val Epoch: {best_test_epoch}')
 
@@ -207,15 +225,41 @@ if __name__ == '__main__':
     device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
     print(device)
     train_loader, val_loader, test_loader = data_preparation()
-    model = ViT().to(device)
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    epochs = 100
+#     model = ViT().to(device)
+#     model = OCET(
+#             num_classes=3,
+#             dim=100,
+#             depth=2,
+#             heads=4,
+#             dim_head=25,
+#             mlp_dim=200,
+#         )
+    model = ViT(
+        in_channels=1,
+        embedding_dim=100,
+        num_layers=2,
+        num_heads=4,
+        qkv_bias=False,
+        mlp_ratio=2.0,
+        dropout_rate=0.0,
+        num_classes= 3,
+    )
+    model = model.to(device)
+      
+    print(model)
+    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay= 0.0005)
+    criterion = nn.CrossEntropyLoss(reduction='mean')
+#     criterion = nn.CrossEntropyLoss()
+#     optimizer = torch.optim.Adam(model.parameters(), 
+#                                  lr=0.001,#0.0005, 
+# #                                  eps=1, 
+#                                  weight_decay=1e-4)#, amsgrad=True)
+    print(optimizer)
+    epochs = 150
     train_losses, val_losses = batch_gd(model, criterion, optimizer, train_loader, val_loader, epochs=epochs)
     compute_acc(test_loader)
     compute_metric(test_loader)
-    np.savetxt('train_losses_vit0.01_10.txt', train_losses)
-    np.savetxt('test_losses_vit0.01_k10.txt', val_losses)
+
 
 
     
