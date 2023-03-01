@@ -2,47 +2,6 @@ import torch
 import torch.nn as nn
 from einops.layers.torch import Rearrange
 from utils import trunc_normal_
-
-class ResConv2d(nn.Module):
-    """
-    Mainly for convenience - combination of convolutional layer with zero padding and a leaky ReLU activation.
-    """
-
-    def __init__(self, in_channels, out_channels, kernel_size, leaky_alpha=0.01):
-        super(ResConv2d, self).__init__()
-        self.layer_block  = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size, padding='same'),
-            nn.LeakyReLU(leaky_alpha),
-            nn.BatchNorm2d(out_channels)
-        )
-
-    def forward(self, x):
-        return self.layer_block(x)
-    
-    
-class ResBlock(nn.Module):
-    """
-    The residual block used in the DeepResLOB model, architecture is as per our report.
-    """
-
-    def __init__(self, n_filters, num_layers=3, leaky_alpha=0.01, kernel_sizes=None):
-        super(ResBlock, self).__init__()
-
-        if kernel_sizes is None:
-            self.kernel_sizes = [(2,1) for i in range(num_layers)]
-        else:
-            self.kernel_sizes = kernel_sizes
-        
-        layers = [ResConv2d(n_filters, n_filters, self.kernel_sizes[i], leaky_alpha) for i in range(num_layers)]
-        self.res_block = nn.Sequential(
-            *layers
-        )
-    
-    def forward(self, x):
-        residual = self.res_block(x)
-
-        return residual + x
-
 class EmbeddingStem(nn.Module):
     def __init__(self, channels=1, embedding_dim=128):
         super(EmbeddingStem, self).__init__()

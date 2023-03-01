@@ -78,8 +78,10 @@ class LOBDataset(Dataset):
         self.k = k
         self.T = T
         data_path = 'data'
-        root_train = '/tf/data/BenchmarkDatasets/NoAuction/3.NoAuction_DecPre/NoAuction_DecPre_Training'
-        root_test = '/tf/data/BenchmarkDatasets/NoAuction/3.NoAuction_DecPre/NoAuction_DecPre_Testing'
+        #root_train = '/tf/data/BenchmarkDatasets/NoAuction/3.NoAuction_DecPre/NoAuction_DecPre_Training'
+        #root_test = '/tf/data/BenchmarkDatasets/NoAuction/3.NoAuction_DecPre/NoAuction_DecPre_Testing'
+        root_train = '/workspace/lob/data'
+        root_test = '/workspace/lob/data'
 
         if split == 'train':
             print('loading train data...')
