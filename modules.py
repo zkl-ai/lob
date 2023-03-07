@@ -70,7 +70,7 @@ class OutputLayer(nn.Module):
     def __init__(
         self,
         embedding_dim,
-        num_classes=1000,
+        num_classes=3,
     ):
         super(OutputLayer, self).__init__()
 
@@ -81,5 +81,6 @@ class OutputLayer(nn.Module):
         self.num_classes = num_classes
 
     def forward(self, x):
-        x = x[:, 0]
+        # x = x[:, 0]
+        x = x.mean(dim = 1)
         return self.net(x)

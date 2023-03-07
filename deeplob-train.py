@@ -12,9 +12,9 @@ import sys
 from data_precess.data import LOBDataset
 import logging
 from vit import VisionTransformer as ViT
-from ocet import OCET
+from models.deeplob import DeepLOB
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 torch.cuda.set_device(0)
 
 torch.cuda.manual_seed(1)
@@ -90,12 +90,11 @@ if __name__ == "__main__":
     '''
     k = 0
     dep = 1
-    bs = 256
     dataset_train = LOBDataset(k, T=100, split='train')
-    dataloader_train = DataLoader(dataset=dataset_train, batch_size=bs, shuffle=True)
+    dataloader_train = DataLoader(dataset=dataset_train, batch_size=256, shuffle=True)
     dataset_test = LOBDataset(k, T=100, split='test')
     
-    dataloader_test = DataLoader(dataset=dataset_test, batch_size=bs, shuffle=False)
+    dataloader_test = DataLoader(dataset=dataset_test, batch_size=256, shuffle=False)
 
     model_name = 'ocet' # ocet deeplob deepfolio 
     save_k = ['k_10', 'k_20', 'k_30', 'k_50', 'k_100']
@@ -105,25 +104,15 @@ if __name__ == "__main__":
     '''model'''
     mode = model_name  
 # Model parameters = 163666
-    # model = OCET(
-    #     num_classes=3,
-    #     dim=40,
-    #     depth=2,
-    #     heads=4,
-    #     dim_head=10,
-    #     mlp_dim=80,
-    # )
-    model = ViT(
-        in_channels=1,
-        embedding_dim=32,
-        num_layers=3,
-        num_heads=4,
-        qkv_bias=False,
-        mlp_ratio=2.0,
-        dropout_rate=0.1,
-        num_classes= 3
-    )
-    
+#     model = OCET(
+#         num_classes=3,
+#         dim=100,
+#         depth=2,
+#         heads=4,
+#         dim_head=25,
+#         mlp_dim=200,
+#     )
+    model = DeepLOB()
     model = model.cuda()
   
     optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay= 0.0001)
