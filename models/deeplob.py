@@ -21,7 +21,7 @@ class DeepLOB(nn.Module):
         )
 
         self.conv2 = nn.Sequential(
-            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=(1, 2), stride=(1, 2)),
+            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=(1, 10), stride=(1, 10)),
             nn.LeakyReLU(negative_slope=0.01),
             nn.BatchNorm2d(32),
             nn.Conv2d(32, 32, kernel_size=(4, 1), padding='same'),
@@ -33,7 +33,7 @@ class DeepLOB(nn.Module):
         )
 
         self.conv3 = nn.Sequential(
-            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=(1, 10)),
+            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=(1, 2)),
             nn.LeakyReLU(negative_slope=0.01),
             nn.BatchNorm2d(32),
             nn.Conv2d(32, 32, kernel_size=(4, 1), padding='same'),

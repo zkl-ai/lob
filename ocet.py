@@ -90,10 +90,10 @@ class OCET(nn.Module):
             nn.Conv2d(in_channels=1, out_channels=2, kernel_size=(1, 2), stride=(1, 2)),
             nn.LeakyReLU(negative_slope=0.01),
             nn.BatchNorm2d(2),
-            nn.Conv2d(in_channels=2, out_channels=4, kernel_size=(1, 2), stride=(1, 2)),
+            nn.Conv2d(in_channels=2, out_channels=40, kernel_size=(1, 10), stride=(1, 10)),
             nn.LeakyReLU(negative_slope=0.01),
-            nn.BatchNorm2d(4),
-            nn.Conv2d(in_channels=4, out_channels=40, kernel_size=(1, 10)),
+            nn.BatchNorm2d(40),
+            nn.Conv2d(in_channels=40, out_channels=40, kernel_size=(1, 2)),
             nn.LeakyReLU(negative_slope=0.01),
             nn.BatchNorm2d(40),
         )
@@ -108,7 +108,7 @@ class OCET(nn.Module):
 
         x = self.conv1(x)
         x = torch.squeeze(x)
-
+        # x = x.permute(0, 2, 1)
         x = self.transformer(x)
         # get the cls token
         x = x[:, 0]

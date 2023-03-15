@@ -15,6 +15,13 @@ def get_label(data):
 def data_classification(X, Y, T):
     [N, D] = X.shape  # [254750, 40]
     df = np.array(X)
+    # df_ap = df[:, 0::4]
+    # df_av = df[:, 1::4]
+    # df_a = np.dstack((df_ap, df_av)).reshape(-1, 20)
+    # df_bp = df[:, 2::4]
+    # df_bv = df[:, 3::4]
+    # df_b = np.dstack((df_bp, df_bv)).reshape(-1, 20)
+    # df = np.concatenate((df_a, df_b), axis=1)
     dY = np.array(Y)
     
     dataX = np.zeros((N - T + 1, T, D))  # (254651, 100, 40)

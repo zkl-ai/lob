@@ -14,7 +14,7 @@ import logging
 from vit import VisionTransformer as ViT
 from ocet import OCET
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 torch.cuda.set_device(0)
 
 torch.cuda.manual_seed(1)
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     '''
     labels = [10, 20, 30, 50, 100] for k in range(5)
     '''
-    k = 0
+    k = 3
     dep = 1
     bs = 256
     dataset_train = LOBDataset(k, T=100, split='train')
@@ -105,25 +105,17 @@ if __name__ == "__main__":
     '''model'''
     mode = model_name  
 # Model parameters = 163666
-    # model = OCET(
-    #     num_classes=3,
-    #     dim=40,
-    #     depth=2,
-    #     heads=4,
-    #     dim_head=10,
-    #     mlp_dim=80,
-    # )
     model = OCET(
         num_classes=3,
-        dim=100,
+        dim=40,
         depth=2,
         heads=4,
-        dim_head=25,
-        mlp_dim=200,
+        dim_head=10,
+        mlp_dim=80,
     )
     # model = ViT(
     #     in_channels=1,
-    #     embedding_dim=100,
+    #     embedding_dim=32,
     #     num_layers=3,
     #     num_heads=4,
     #     qkv_bias=False,
@@ -134,7 +126,7 @@ if __name__ == "__main__":
     
     model = model.cuda()
   
-    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay= 0.0001)
+    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay= 0.0001)
     loss_fn = nn.CrossEntropyLoss(reduction='mean')
 
     logging.info('  Model = %s', str(model))
